@@ -1,0 +1,30 @@
+{
+  "name": "vista-crm-mcp",
+  "version": "1.0.0",
+  "description": "Servidor MCP para integração com API Vista CRM Imobiliário",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx index.ts"
+  },
+  "keywords": [
+    "mcp",
+    "vista",
+    "crm",
+    "imobiliaria",
+    "model-context-protocol"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "tsx": "^4.19.0"
+  }
+}
