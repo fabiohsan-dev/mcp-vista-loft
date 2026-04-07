@@ -19,6 +19,63 @@ O projeto utiliza uma arquitetura modular em camadas (**Clean Architecture**) pa
 
 ---
 
+## 🔌 Integração com Agentes de IA
+
+Este servidor utiliza o protocolo MCP via transporte `stdio`. Para integrar, você deve apontar para o arquivo compilado em `dist/index.js`.
+
+### 1. Claude Desktop / Claude Code
+Edite o arquivo de configuração (`claude_desktop_config.json`):
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "vista-crm": {
+      "command": "node",
+      "args": ["/CAMINHO/ABSOLUTO/mcp-vista-loft/dist/index.js"],
+      "env": {
+        "VISTA_URL": "https://sua-instancia.vistahost.com.br",
+        "VISTA_KEY": "sua-chave-api"
+      }
+    }
+  }
+}
+```
+
+### 2. Cursor (IDE)
+1. Vá em **Settings** > **Cursor Settings** > **MCP**.
+2. Clique em **+ Add New MCP Server**.
+3. Configure como:
+   - **Name:** `Vista CRM`
+   - **Type:** `command`
+   - **Command:** `node /CAMINHO/ABSOLUTO/mcp-vista-loft/dist/index.js`
+4. Certifique-se de que as variáveis `VISTA_URL` e `VISTA_KEY` estejam configuradas no seu ambiente de sistema.
+
+### 3. Gemini CLI
+Para integrar com o Gemini CLI ou outros clientes baseados em Node.js, adicione à sua configuração:
+
+```json
+{
+  "mcp": {
+    "servers": [
+      {
+        "name": "vista-crm",
+        "type": "stdio",
+        "command": "node",
+        "args": ["/CAMINHO/ABSOLUTO/mcp-vista-loft/dist/index.js"],
+        "env": {
+          "VISTA_URL": "...",
+          "VISTA_KEY": "..."
+        }
+      }
+    ]
+  }
+}
+```
+
+---
+
 ## 📋 Ferramentas Disponíveis (37 no total)
 
 ### 🏠 Módulo de Imóveis (17)
