@@ -18,7 +18,6 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          # Nota: O repo está na raiz, então o path do lock é direto
           cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
@@ -44,8 +43,8 @@ jobs:
     name: Integration Smoke Test
     needs: unit_and_build
     runs-on: ubuntu-latest
-    # Só roda se os secrets de sandbox estiverem configurados
-    if: "${{ secrets.VISTA_KEY_SANDBOX != '' }}"
+    # Corrigido: Não usamos 'if' com secrets no nível de job.
+    # Em vez disso, verificamos a existência no step ou passamos para env.
     steps:
       - uses: actions/checkout@v4
 
@@ -61,6 +60,8 @@ jobs:
           python-version: '3.10'
 
       - name: Run Smoke Test
+        # O step só executa se a chave não estiver vazia
+        if: "${{ secrets.VISTA_KEY_SANDBOX != '' }}"
         env:
           VISTA_URL: ${{ secrets.VISTA_URL_SANDBOX }}
           VISTA_KEY: ${{ secrets.VISTA_KEY_SANDBOX }}
