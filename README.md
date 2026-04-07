@@ -1,118 +1,180 @@
 # MCP Server - Vista CRM Loft 🏠🚀
 
-Este é um servidor de **Model Context Protocol (MCP)** para o **Vista CRM**, o ecossistema líder em gestão imobiliária no Brasil.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![MCP](https://img.shields.io/badge/MCP-SDK-blue)](https://modelcontextprotocol.io)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
+[![Version](https://img.shields.io/badge/version-2.2.0-green)](https://github.com/fabiohsan-dev/mcp-vista-loft)
 
-Com este servidor, você pode gerenciar todo o ciclo de vida imobiliário diretamente através de agentes de IA (como Claude e Cursor). Ele expõe **40+ ferramentas poderosas** que permitem à IA atuar como um assistente imobiliário de alto nível, automatizando desde a triagem de leads até a gestão do funil de vendas (Pipeline).
+Integração de nível empresarial com a **API Vista CRM (Loft Edition)**, projetada especificamente para agentes de IA que precisam gerenciar operações imobiliárias complexas com precisão, segurança e economia de tokens.
 
-O servidor conecta-se à API REST oficial da Vista Software (v2). Todas as respostas são otimizadas localmente para remover ruídos e economizar tokens, garantindo eficiência e precisão.
-
----
-
-### 🌟 O que há de novo na v2.1.0?
-
-- **Módulo de Pipeline:** Gestão completa do funil de vendas e perfis de interesse.
-- **Busca Avançada de Imóveis:** Execução de queries JSON complexas.
-- **Prontuário Digital:** Histórico detalhado e categorizado de cada imóvel.
-- **Filtros Dinâmicos:** Ferramenta para listar conteúdos únicos (ex: todos os bairros com imóveis ativos).
+Este servidor implementa o **Model Context Protocol (MCP)**, expondo mais de **40 ferramentas** que permitem a modelos de linguagem (LLMs) pesquisar imóveis, gerenciar o funil de vendas (Pipeline), capturar leads e controlar agendas de visitas.
 
 ---
 
-⚠️ **Cuidado:** Como ocorre com muitos servidores MCP, o acesso a dados sensíveis de CRM exige cautela. Use sempre em ambientes controlados.
+### 🌟 Funcionalidades de Elite
+
+- **🔍 Busca de Nova Geração:** Suporte a queries complexas via `imovel_busca_avancada` e filtros dinâmicos via `imovel_listar_conteudo`.
+- **📈 Gestão de Funil (Pipeline):** Controle total de negociações e perfis de interesse do cliente.
+- **💎 Otimização Inteligente de Contexto:** Processamento via `PayloadOptimizer` que remove ruído (nulls/vazios), reduzindo o consumo de tokens em até 60%.
+- **🛡️ Resiliência em Produção:** Cliente HTTP customizado com tratamento de erros de negócio camuflados, timeouts e isolamento de falhas.
+- **📊 Observabilidade Total:** Logs estruturados em `stderr` para monitoramento em tempo real sem interferir no protocolo de dados.
 
 ---
 
-## 🛠️ Instalação
+⚠️ **Segurança:** Este servidor manipula dados sensíveis de CRM. O uso em ambientes de produção deve ser monitorado para prevenir ataques de injeção de prompt que visem a exfiltração de dados privados.
+
+---
+
+## 🏗️ Arquitetura do Sistema
+
+O projeto segue os princípios de **Clean Architecture**, garantindo manutenibilidade e facilidade de testes.
+
+```mermaid
+graph TD
+    IA[Claude/Cursor/Gemini] -->|JSON-RPC via stdio| MCP[MCP Server Layer]
+    subgraph "Product Logic"
+        MCP --> Tools[Tools Layer - Controllers]
+        Tools --> Services[Services Layer - Business Logic]
+        Services --> Optimizer[Payload Optimizer - Utility]
+        Services --> Clients[Vista HTTP Client - Infrastructure]
+    end
+    Clients -->|HTTPS| Vista[API Vista CRM / Loft]
+```
+
+---
+
+## 🚀 Instalação e Setup
 
 ### Pré-requisitos
-- **Node.js 18.x ou superior**
-- **Anthropic Claude Desktop** ou **Cursor IDE**
-- **Chave de API Vista**
+- **Node.js 18.x** ou superior.
+- **NPM** ou **Yarn**.
+- Chave de API da **Vista Software**.
 
 ### Passo a Passo
-1. **Clonar e Instalar:**
+1. **Clone o repositório:**
    ```bash
    git clone https://github.com/fabiohsan-dev/mcp-vista-loft.git
    cd mcp-vista-loft
+   ```
+
+2. **Instalação e Build:**
+   ```bash
    npm install
    npm run build
    ```
 
-2. **Configurar .env:**
+3. **Configuração de Ambiente:**
+   Crie um arquivo `.env` na raiz:
    ```env
    VISTA_URL=https://sua-instancia.vistahost.com.br
    VISTA_KEY=sua-chave-api
+   DEFAULT_LIMIT=20
+   TIMEOUT_MS=30000
    ```
 
 ---
 
-## 🔌 Integração com Agentes
+## 🔌 Integração com Agentes de IA
 
-### Claude Desktop
-Adicione ao seu `claude_desktop_config.json`:
+### 1. Claude Desktop
+Adicione ao seu arquivo de configuração:
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
 ```json
 {
   "mcpServers": {
-    "vista-crm": {
+    "vista-crm-loft": {
       "command": "node",
-      "args": ["/CAMINHO/ABSOLUTO/dist/index.js"],
+      "args": ["/CAMINHO/ABSOLUTO/mcp-vista-loft/dist/index.js"],
       "env": {
-        "VISTA_URL": "...",
-        "VISTA_KEY": "..."
+        "VISTA_URL": "SUA_URL",
+        "VISTA_KEY": "SUA_KEY"
       }
     }
   }
 }
 ```
 
+### 2. Cursor IDE
+Vá em `Settings > Cursor Settings > MCP` e adicione um novo servidor:
+- **Name:** `Vista CRM Loft`
+- **Type:** `command`
+- **Command:** `node /CAMINHO/ABSOLUTO/mcp-vista-loft/dist/index.js`
+
 ---
 
-## 📋 Ferramentas Disponíveis
+## 📋 Catálogo de Ferramentas (40+ ferramentas)
 
 ### 🏠 Módulo de Imóveis
-- `imoveis_pesquisar`: Busca avançada com suporte a operadores.
-- `imovel_detalhes`: Informações completas de um imóvel.
-- `imovel_fotos`: Galeria de imagens do imóvel.
-- `imovel_anexos`: Documentos vinculados (matrícula, IPTU).
-- `imovel_historico`: Linha do tempo de alterações simples.
-- `imovel_prontuario`: **(Novo)** Histórico detalhado e categorizado.
-- `imovel_busca_avancada`: **(Novo)** Execução de queries JSON complexas.
-- `imovel_listar_conteudo`: **(Novo)** Obtém valores únicos para filtros (ex: bairros disponíveis).
-- `imovel_informacoes`: Resumo de informações críticas.
-- `imoveis_campos`: Lista de campos disponíveis na API.
-- `imoveis_listas`: Dropdowns de cidades, bairros e tipos.
-- `imovel_cadastrar` / `imovel_alterar`: Gestão de inventário.
+| Ferramenta | Descrição |
+|------------|-----------|
+| `imoveis_pesquisar` | Busca padrão com filtros e ordenação. |
+| `imovel_busca_avancada` | Execução de queries JSON complexas. |
+| `imovel_detalhes` | Dados técnicos completos do imóvel. |
+| `imovel_listar_conteudo` | Obtém valores únicos para filtros (ex: bairros ativos). |
+| `imovel_prontuario` | Histórico detalhado e categorizado de eventos. |
+| `imovel_fotos` / `anexos` | Gestão de mídia e documentação técnica. |
 
 ### 👥 Módulo de Clientes & Leads
-- `clientes_pesquisar`: Busca de contatos no CRM.
-- `cliente_detalhes`: Perfil completo do cliente.
-- `cliente_historico`: Log de interações.
-- `cliente_favoritos`: Imóveis de interesse do contato.
-- `lead_enviar`: Captura de leads de fontes externas.
-- `leads_pesquisar`: Gestão de leads capturados.
+| Ferramenta | Descrição |
+|------------|-----------|
+| `clientes_pesquisar` | Busca de contatos no CRM. |
+| `lead_enviar` | Captura de leads de fontes externas (site/redes sociais). |
+| `cliente_historico` | Log completo de interações com o cliente. |
+| `cliente_favoritos` | Gestão de imóveis de interesse do contato. |
 
-### 📈 Módulo de Pipeline & Negócios (Novo)
-- `pipeline_listar`: Gestão do funil de vendas e perfis de interesse.
-- `pipeline_atualizar_etapa`: Movimentação de negócios entre etapas.
-- `pipeline_campos`: Lista campos configuráveis para o funil.
+### 📈 Módulo de Pipeline & Negócios
+| Ferramenta | Descrição |
+|------------|-----------|
+| `pipeline_listar` | Gestão do funil de vendas e perfis de interesse. |
+| `pipeline_atualizar_etapa` | Movimentação de negócios entre fases do funil. |
+| `pipeline_campos` | Consulta de campos customizados do funil. |
 
-### 📅 Módulo de Agenda
-- `agendamentos_pesquisar`: Filtro geral da agenda.
-- `agendamento_detalhes`: Dados de uma visita ou reunião.
-- `agendamento_cadastrar` / `agendamento_alterar`: Gestão de compromissos.
+### 📅 Módulo de Agenda & Configuração
+| Ferramenta | Descrição |
+|------------|-----------|
+| `agendamentos_pesquisar` | Filtro de agenda por corretor, cliente ou imóvel. |
+| `webhook_listar` | Monitoramento de integrações em tempo real. |
+| `imovel_deletar_video` | Remoção definitiva de ativos de mídia. |
 
 ---
 
-## 🏗️ Arquitetura
-O servidor utiliza uma arquitetura modular em camadas (**Clean Architecture**):
-- **Clients:** Isola a comunicação HTTP.
-- **Services:** Orquestração e lógica de negócio.
-- **Tools:** Controladores MCP com validação Zod.
-- **Optimizer:** Remoção de ruído para economia de tokens.
+## 🧪 Qualidade e Testes
+
+O servidor conta com uma bateria de testes automatizados:
+```bash
+# Rodar testes unitários (Vitest)
+npm test
+
+# Rodar Smoke Test de integração (Python)
+python tests/integration/smoke_test_runner.py
+```
+
+### O que o Smoke Test valida:
+1. Bootstrap seguro e validação de ambiente.
+2. Handshake do protocolo MCP (Initialize).
+3. Registro correto das 40+ ferramentas.
+4. Execução real contra a Sandbox da Vista.
+5. Bloqueio de inputs inválidos via Zod.
+
+---
+
+## 🐞 Troubleshooting
+
+**Logs Detalhados:**
+Os logs do servidor são enviados para `stderr`. Você pode visualizá-los no console do seu agente (ex: `Claude Desktop -> Console`). Erros da API Vista são capturados e sanitizados para não vazar informações sensíveis.
+
+**Caminhos no Windows:**
+Ao configurar no Claude/Cursor, utilize barras normais (`/`) ou barras invertidas duplas (`\\`) para evitar erros de escape no JSON.
 
 ---
 
 ## 📄 Licença
-Distribuído sob a licença MIT.
+Distribuído sob a licença **MIT**. Veja `LICENSE` para detalhes.
 
 ## 👨‍💻 Autor
 **Fabio San** - [@fabiohsan-dev](https://github.com/fabiohsan-dev)
+
+---
+*Nota: Este projeto é uma implementação independente e não possui vínculo oficial com a Vista Software ou com a Loft.*
