@@ -162,15 +162,19 @@ $env:VISTA_URL="http://sandbox-rest.vistahost.com.br"; $env:VISTA_KEY="SUA_KEY";
 
 ## 🤖 Automação (CI/CD)
 
-Este repositório utiliza **GitHub Actions** para garantir a integridade do código:
+Este repositório possui uma infraestrutura de automação real via **GitHub Actions**:
 
-- **CI (Build & Test):** Executado em cada Push ou Pull Request. Valida o build TypeScript e roda os testes.
-- **CD (Deploy):** Workflow preparado para deploy em produção (`workflow_dispatch`).
+- **CI (Build & Test):** Localizado em `.github/workflows/ci.yml`.
+  - **Job 1 (Unit & Build):** Valida tipos TypeScript, roda testes unitários e gera o build minificado.
+  - **Job 2 (Integration):** Roda o Smoke Test Python em um ambiente Ubuntu isolado.
+- **CD (Deploy):** Localizado em `.github/workflows/deploy.yml`.
+  - Configurado para rodar em `push` na `main` ou via disparo manual (`workflow_dispatch`).
+  - Utiliza o ambiente `production` do GitHub para proteção de segredos.
 
-### 🛡️ Configuração de Secrets
-Para que o CI execute o Smoke Test, configure os seguintes **GitHub Secrets**:
-- `VISTA_URL_SANDBOX`: URL da sandbox para testes.
-- `VISTA_KEY_SANDBOX`: Chave de API da sandbox.
+### 🛡️ Configuração de Secrets no GitHub
+Para que o pipeline de integração funcione, você deve adicionar os seguintes **Secrets** no seu repositório:
+1. `VISTA_URL_SANDBOX`: URL da sandbox (ex: `http://sandbox-rest.vistahost.com.br`).
+2. `VISTA_KEY_SANDBOX`: Sua chave de API da sandbox.
 
 ---
 

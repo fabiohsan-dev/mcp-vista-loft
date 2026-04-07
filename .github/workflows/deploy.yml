@@ -1,0 +1,40 @@
+name: CD - Deploy
+
+on:
+  workflow_dispatch: # Disparo manual por segurança
+  push:
+    branches: [ main ]
+    # Só dispara deploy se houver mudanças no código fonte ou dependências
+    paths:
+      - 'src/**'
+      - 'package.json'
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production # Exige configuração de Environment no GitHub para proteção
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install and Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Execution
+        run: |
+          echo "🚀 Preparando ambiente de produção..."
+          # TODO: Inserir aqui o comando de deploy real
+          # Exemplos:
+          # - Railway: npx railway up --service mcp-vista-loft
+          # - Fly.io: flyctl deploy
+          # - Docker: docker build -t mcp-vista . && docker push ...
+          echo "⚠️ Nenhum provedor de nuvem configurado. O build foi validado com sucesso."
+          echo "✅ Deploy simulado concluído."
