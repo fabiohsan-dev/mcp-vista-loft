@@ -12,64 +12,50 @@ export class ImoveisService {
     ordenacao?: Record<string, 'asc' | 'desc'>;
   }) {
     const { campos, filtros, paginacao, ordenacao } = params;
-    
     const queryParams: Record<string, any> = {
-      v2: 1, // Ativa suporte JSON v2 da API
+      v2: 1,
       showtotal: 1,
       pesquisa: {
         fields: campos || ['Codigo', 'Categoria', 'Bairro', 'Cidade', 'ValorVenda'],
         filter: filtros || {}
       }
     };
-
     if (paginacao) {
       queryParams.paginacao = {
         pagina: paginacao.pagina || 1,
         quantidade: Math.min(paginacao.quantidade || env.DEFAULT_LIMIT, env.MAX_LIMIT),
       };
     }
-
     if (ordenacao) queryParams.order = ordenacao;
-
     const response = await this.client.get<any>('/imoveis/listar', queryParams);
-    return optimizePayload({
-      items: response.data || response,
-      metadata: { total: response.total, paginas: response.paginas, pagina: response.pagina }
-    });
+    return optimizePayload({ items: response.data || response, metadata: { total: response.total, paginas: response.paginas, pagina: response.pagina } });
   }
 
   async buscaAvancada(pesquisaJson: string) {
-    // Novo endpoint para queries complexas
-    return optimizePayload(await this.client.get<any>('/imoveis/buscaAvancada', { 
-      pesquisa: pesquisaJson,
-      v2: 1 
-    }));
+    return optimizePayload(await this.client.get<any>('/imoveis/buscaAvancada', { pesquisa: pesquisaJson, v2: 1 }));
   }
 
   async listarConteudoDistinct(campos: string[]) {
-    // Retorna valores únicos para filtros (ex: todos os bairros)
-    return optimizePayload(await this.client.get<any>('/imoveis/listarConteudo', {
-      fields: JSON.stringify(campos),
-      v2: 1
-    }));
+    return optimizePayload(await this.client.get<any>('/imoveis/listarConteudo', { fields: JSON.stringify(campos), v2: 1 }));
   }
 
   async obterProntuario(codigo: string) {
-    // Novo histórico detalhado
-    return optimizePayload(await this.client.get<any>('/imoveis/prontuario', {
-      imovel: codigo,
-      v2: 1
-    }));
+    return optimizePayload(await this.client.get<any>('/imoveis/prontuario', { imovel: codigo, v2: 1 }));
+  }
+
+  async obterHistorico(codigo: string) {
+    // Alias para manter compatibilidade com tools legadas que chamam obterHistorico
+    return this.obterProntuario(codigo);
   }
 
   async obterDetalhes(codigo: string, campos?: string[]) {
-    return optimizePayload(await this.client.get<any>('/imoveis/detalhes', {
-      v2: 1,
-      pesquisa: { fields: campos || ['*'], filter: { Codigo: codigo } }
-    }));
+    return optimizePayload(await this.client.get<any>('/imoveis/detalhes', { v2: 1, pesquisa: { fields: campos || ['*'], filter: { Codigo: codigo } } }));
   }
 
-  // ... (outros métodos permanecem similares, mas com v2: 1 onde possível)
+  async obterInformacoes(codigo: string) {
+    return optimizePayload(await this.client.get<any>('/imoveis/informacoes', { v2: 1, pesquisa: { fields: ['*'], filter: { Codigo: codigo } } }));
+  }
+
   async obterFotos(codigo: string) { return optimizePayload(await this.client.get<any>('/imoveis/fotos', { v2: 1, pesquisa: { filter: { Codigo: codigo } } })); }
   async obterAnexos(codigo: string) { return optimizePayload(await this.client.get<any>('/imoveis/anexos', { v2: 1, pesquisa: { filter: { Codigo: codigo } } })); }
   async listarCampos() { return optimizePayload(await this.client.get<any>('/imoveis/campos', { v2: 1 })); }

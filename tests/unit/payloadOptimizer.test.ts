@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { optimizePayload } from '../../src/utils/payloadOptimizer.js';
 
 describe('PayloadOptimizer', () => {
