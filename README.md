@@ -1,30 +1,64 @@
 # MCP Server - Vista CRM Loft 🏠🚀
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![MCP](https://img.shields.io/badge/MCP-SDK-blue)](https://modelcontextprotocol.io)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
+Este é um servidor de **Model Context Protocol (MCP)** para o **Vista CRM**, o ecossistema líder em gestão imobiliária no Brasil.
 
-Integração de nível empresarial com a **API Vista CRM**, projetada para agentes de IA que precisam gerenciar operações imobiliárias com precisão, segurança e economia de tokens. Este servidor expõe o conjunto completo de ferramentas para gestão de imóveis, clientes, leads e agenda.
+Com este servidor, você pode pesquisar, ler e gerenciar seu inventário de imóveis, base de clientes, leads e agenda diretamente através de agentes de IA (como Claude e Cursor). Ele expõe **37 ferramentas poderosas** que permitem à IA atuar como um assistente imobiliário de alto nível, automatizando desde a triagem de leads até a organização de visitas.
 
----
-
-## 🏗️ Arquitetura
-
-O projeto utiliza uma arquitetura modular em camadas (**Clean Architecture**) para garantir manutenibilidade e resiliência:
-
-- **Clients (`src/clients`)**: Isola a comunicação HTTP, gerencia autenticação e erros de rede.
-- **Services (`src/services`)**: Camada de orquestração e regras de negócio.
-- **Tools (`src/tools`)**: Controladores MCP que validam inputs e formatam saídas para o LLM.
-- **Utils (`src/utils`)**: Otimizador de payload para remoção de ruído e economia de tokens.
+O servidor conecta-se à API REST oficial da Vista Software. Todas as respostas são otimizadas localmente para remover ruídos e economizar tokens antes de serem enviadas ao modelo de linguagem, garantindo eficiência e baixo custo operacional.
 
 ---
 
-## 🔌 Integração com Agentes de IA
+### 🌟 O que você pode fazer?
 
-Este servidor utiliza o protocolo MCP via transporte `stdio`. Para integrar, você deve apontar para o arquivo compilado em `dist/index.js`.
+- **Pesquisa Inteligente:** "Encontre apartamentos de 3 quartos no Itaim Bibi abaixo de R$ 2M".
+- **Gestão de Leads:** "Cadastre este novo interessado que veio pelo WhatsApp e vincule-o ao imóvel X".
+- **Controle de Agenda:** "Quais são as visitas agendadas para o corretor Fabio nesta quarta-feira?".
+- **Enriquecimento de Dados:** "Atualize a descrição deste imóvel e adicione estas novas URLs de fotos".
 
-### 1. Claude Desktop / Claude Code
-Edite o arquivo de configuração (`claude_desktop_config.json`):
+---
+
+⚠️ **Cuidado:** Como ocorre com muitos servidores MCP, o acesso a dados sensíveis de CRM está sujeito a riscos de exfiltração se o agente for exposto a injeções de prompt maliciosas em contextos de terceiros. Use sempre em ambientes controlados.
+
+---
+
+## 🛠️ Instalação
+
+### Pré-requisitos
+- **Node.js 18.x ou superior**
+- **NPM** ou **Yarn**
+- **Anthropic Claude Desktop** ou **Cursor IDE**
+- **Chave de API Vista:** Obtida junto ao suporte da Vista Software.
+
+### Passo a Passo
+
+1. **Clonar o repositório:**
+   ```bash
+   git clone https://github.com/fabiohsan-dev/mcp-vista-loft.git
+   cd mcp-vista-loft
+   ```
+
+2. **Instalar dependências e realizar o build:**
+   ```bash
+   npm install
+   npm run build
+   ```
+
+3. **Configurar Variáveis de Ambiente:**
+   Crie um arquivo `.env` na raiz do projeto:
+   ```env
+   VISTA_URL=https://sua-instancia.vistahost.com.br
+   VISTA_KEY=sua-chave-api-aqui
+   ```
+   *Nota: Se quiser testar imediatamente, use a Sandbox da Vista:*
+   - `VISTA_URL=http://sandbox-rest.vistahost.com.br`
+   - `VISTA_KEY=c9fdd79584fb8d369a6a579af1a8f681`
+
+---
+
+## 🔌 Configuração nos Agentes
+
+### Claude Desktop
+Adicione o servidor ao seu arquivo `claude_desktop_config.json`:
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 
@@ -33,118 +67,66 @@ Edite o arquivo de configuração (`claude_desktop_config.json`):
   "mcpServers": {
     "vista-crm": {
       "command": "node",
-      "args": ["/CAMINHO/ABSOLUTO/mcp-vista-loft/dist/index.js"],
+      "args": ["E:/Unus-site/MCP/MCP-VISTA/dist/index.js"],
       "env": {
-        "VISTA_URL": "https://sua-instancia.vistahost.com.br",
-        "VISTA_KEY": "sua-chave-api"
+        "VISTA_URL": "SUA_URL",
+        "VISTA_KEY": "SUA_KEY"
       }
     }
   }
 }
 ```
 
-### 2. Cursor (IDE)
+### Cursor IDE
 1. Vá em **Settings** > **Cursor Settings** > **MCP**.
 2. Clique em **+ Add New MCP Server**.
-3. Configure como:
+3. Configure:
    - **Name:** `Vista CRM`
    - **Type:** `command`
-   - **Command:** `node /CAMINHO/ABSOLUTO/mcp-vista-loft/dist/index.js`
-4. Certifique-se de que as variáveis `VISTA_URL` e `VISTA_KEY` estejam configuradas no seu ambiente de sistema.
-
-### 3. Gemini CLI
-Para integrar com o Gemini CLI ou outros clientes baseados em Node.js, adicione à sua configuração:
-
-```json
-{
-  "mcp": {
-    "servers": [
-      {
-        "name": "vista-crm",
-        "type": "stdio",
-        "command": "node",
-        "args": ["/CAMINHO/ABSOLUTO/mcp-vista-loft/dist/index.js"],
-        "env": {
-          "VISTA_URL": "...",
-          "VISTA_KEY": "..."
-        }
-      }
-    ]
-  }
-}
-```
+   - **Command:** `node E:/Unus-site/MCP/MCP-VISTA/dist/index.js`
 
 ---
 
-## 📋 Ferramentas Disponíveis (37 no total)
+## 🏗️ Arquitetura & Fluxo de Dados
 
-### 🏠 Módulo de Imóveis (17)
-- `imoveis_pesquisar`: Busca avançada com suporte a operadores.
-- `imovel_detalhes`: Informações completas de um imóvel.
-- `imovel_fotos`: Galeria de imagens do imóvel.
-- `imovel_anexos`: Documentos vinculados (matrícula, IPTU).
-- `imovel_historico`: Linha do tempo de alterações.
-- `imovel_informacoes`: Resumo de informações críticas.
-- `imoveis_campos`: Lista de campos disponíveis na API.
-- `imoveis_listas`: Dropdowns de cidades, bairros e tipos.
-- `imoveis_por_corretor`: Carteira de um colaborador específico.
-- `imoveis_por_agencia`: Imóveis vinculados a uma filial.
-- `imovel_cadastrar`: Criação de novos registros.
-- `imovel_alterar`: Atualização de dados existentes.
-- `imovel_cadastrar_fotos`: Upload de imagens para a galeria.
-- `imovel_cadastrar_documentos`: Anexo de arquivos técnicos.
-- `imovel_cadastrar_historico`: Registro de eventos manuais.
-- `imovel_cadastrar_proprietario`: Vínculo de donos ao imóvel.
-- `imovel_definir_corretor`: Atribuição de responsabilidade.
+O servidor utiliza uma arquitetura de **Camadas Desacopladas** (Clean Architecture) para garantir que seja resiliente e fácil de evoluir.
 
-### 👥 Módulo de Clientes & Leads (13)
-- `clientes_pesquisar`: Busca de contatos no CRM.
-- `cliente_detalhes`: Perfil completo do cliente.
-- `cliente_historico`: Log de interações com o cliente.
-- `cliente_favoritos`: Imóveis de interesse do contato.
-- `clientes_campos`: Campos disponíveis para cadastro.
-- `clientes_por_corretor`: Carteira de clientes do corretor.
-- `clientes_por_agencia`: Clientes vinculados à agência.
-- `cliente_cadastrar`: Registro de novos contatos.
-- `cliente_alterar`: Edição de perfil de cliente.
-- `cliente_cadastrar_historico`: Registro de contato (ligação, visita).
-- `cliente_definir_corretor`: Mudança de corretor responsável.
-- `lead_enviar`: Captura de leads de fontes externas (site/portais).
-- `leads_pesquisar`: Gestão de leads capturados.
-
-### 📅 Módulo de Agenda (7)
-- `agendamentos_pesquisar`: Filtro geral da agenda.
-- `agendamento_detalhes`: Dados de uma visita ou reunião.
-- `agendamentos_por_corretor`: Agenda pessoal do corretor.
-- `agendamentos_por_cliente`: Compromissos de um cliente.
-- `agendamentos_por_imovel`: Visitas marcadas em um imóvel.
-- `agendamento_cadastrar`: Criação de novo evento.
-- `agendamento_alterar`: Reagendamento ou cancelamento.
+1. **Camada de Transporte (MCP Server):** Implementa o protocolo JSON-RPC via `stdio`.
+2. **Camada de Tools (Controllers):** Valida os argumentos via **Zod** e fornece descrições semânticas para a IA.
+3. **Camada de Services (Business Logic):** Orquestra as regras de negócio e a normalização de dados.
+4. **Camada de Clients (Infrastructure):** Isola a comunicação HTTP, tratando timeouts e autenticação.
+5. **Payload Optimizer (Utility):** Uma etapa crítica que limpa `nulls`, `undefined` e campos vazios, reduzindo o consumo de tokens em até 60%.
 
 ---
 
-## 🚀 Como Executar
+## 📋 Ferramentas Disponíveis
 
-### 1. Configuração
-Crie um arquivo `.env` na raiz:
-```env
-VISTA_URL=https://suainstancia.vistahost.com.br
-VISTA_KEY=suachaveapi
-DEFAULT_LIMIT=20
-TIMEOUT_MS=30000
-```
+O servidor expõe 37 ferramentas, as principais são:
 
-### 2. Build & Start
-```bash
-npm install
-npm run build
-npm start
-```
+- **Módulo de Imóveis:** `imoveis_pesquisar`, `imovel_detalhes`, `imovel_fotos`, `imovel_cadastrar`, `imoveis_listas`.
+- **Módulo de CRM:** `clientes_pesquisar`, `cliente_detalhes`, `cliente_historico`, `cliente_cadastrar`, `cliente_favoritos`.
+- **Módulo de Leads:** `lead_enviar`, `leads_pesquisar`.
+- **Módulo de Agenda:** `agendamentos_pesquisar`, `agendamento_cadastrar`, `agendamento_alterar`.
+
+---
+
+## 🐞 Solução de Problemas
+
+**O servidor não aparece no Claude/Cursor:**
+- Verifique se o caminho no `args` está absoluto e utiliza barras normais (`/`) ou barras invertidas duplas (`\\`).
+- Certifique-se de que rodou `npm run build` e o arquivo `dist/index.js` existe.
+
+**Erro de Autenticação (401/403):**
+- Verifique se a `VISTA_KEY` no seu arquivo de configuração está correta e sem espaços.
+- Algumas instâncias da Vista exigem que o IP do servidor esteja na whitelist.
+
+**IA "alucinando" campos:**
+- A API Vista possui campos customizados por instância. Use a ferramenta `imoveis_campos` para que a IA aprenda quais campos estão disponíveis na sua conta específica.
 
 ---
 
 ## 📄 Licença
-Distribuído sob a licença MIT.
+Distribuído sob a licença MIT. Veja `LICENSE` para mais detalhes.
 
 ## 👨‍💻 Autor
 **Fabio San** - [@fabiohsan-dev](https://github.com/fabiohsan-dev)
