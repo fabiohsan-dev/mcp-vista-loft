@@ -43,8 +43,9 @@ jobs:
     name: Integration Smoke Test
     needs: unit_and_build
     runs-on: ubuntu-latest
-    # Corrigido: Não usamos 'if' com secrets no nível de job.
-    # Em vez disso, verificamos a existência no step ou passamos para env.
+    # Mapeamos o secret para uma env var do job
+    env:
+      VISTA_KEY_CHECK: ${{ secrets.VISTA_KEY_SANDBOX }}
     steps:
       - uses: actions/checkout@v4
 
@@ -60,8 +61,8 @@ jobs:
           python-version: '3.10'
 
       - name: Run Smoke Test
-        # O step só executa se a chave não estiver vazia
-        if: "${{ secrets.VISTA_KEY_SANDBOX != '' }}"
+        # Agora verificamos a env var, o que é seguro e compatível
+        if: env.VISTA_KEY_CHECK != ''
         env:
           VISTA_URL: ${{ secrets.VISTA_URL_SANDBOX }}
           VISTA_KEY: ${{ secrets.VISTA_KEY_SANDBOX }}
