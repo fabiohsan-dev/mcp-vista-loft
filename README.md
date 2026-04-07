@@ -1,121 +1,93 @@
-# MCP Server - Vista CRM 🏠🚀
+# MCP Server - Vista CRM Loft 🏠🚀
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-SDK-blue)](https://modelcontextprotocol.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
 
-Integração de nível empresarial com a **API Vista CRM**, projetada para agentes de IA que precisam gerenciar operações imobiliárias com precisão, segurança e economia de tokens.
+Integração de nível empresarial com a **API Vista CRM**, projetada para agentes de IA que precisam gerenciar operações imobiliárias com precisão, segurança e economia de tokens. Este servidor expõe o conjunto completo de ferramentas para gestão de imóveis, clientes, leads e agenda.
 
 ---
 
-## 🏗️ Arquitetura do Produto
+## 🏗️ Arquitetura
 
-Este servidor MCP foi construído utilizando os princípios de **Clean Architecture**, garantindo que a lógica de negócio esteja totalmente desacoplada dos detalhes de transporte e rede.
+O projeto utiliza uma arquitetura modular em camadas (**Clean Architecture**) para garantir manutenibilidade e resiliência:
 
-```mermaid
-graph TD
-    IA[Claude/Cursor] -->|stdio| MCP[MCP Server]
-    subgraph "Camadas Internas"
-        MCP --> Tools[Tools Layer]
-        Tools --> Services[Services Layer]
-        Services --> Optimizer[Payload Optimizer]
-        Services --> Clients[Vista HTTP Client]
-    end
-    Clients -->|REST API| Vista[Vista CRM API]
-```
-
-### Por que esta arquitetura?
-- **Economia de Tokens:** Todas as respostas são processadas pelo `PayloadOptimizer` para remover campos nulos e ruídos.
-- **Resiliência:** O `VistaClient` gerencia timeouts, retries e trata erros de negócio camuflados em HTTP 200.
-- **Observabilidade:** Logs estruturados em `stderr` permitem monitorar requisições sem quebrar o protocolo JSON-RPC.
+- **Clients (`src/clients`)**: Isola a comunicação HTTP, gerencia autenticação e erros de rede.
+- **Services (`src/services`)**: Camada de orquestração e regras de negócio.
+- **Tools (`src/tools`)**: Controladores MCP que validam inputs e formatam saídas para o LLM.
+- **Utils (`src/utils`)**: Otimizador de payload para remoção de ruído e economia de tokens.
 
 ---
 
-## 🚀 Guia de Início Rápido
+## 📋 Ferramentas Disponíveis (37 no total)
 
-### 1. Requisitos
-- Node.js 18 ou superior
-- Chave de acesso à API Vista Software
+### 🏠 Módulo de Imóveis (17)
+- `imoveis_pesquisar`: Busca avançada com suporte a operadores.
+- `imovel_detalhes`: Informações completas de um imóvel.
+- `imovel_fotos`: Galeria de imagens do imóvel.
+- `imovel_anexos`: Documentos vinculados (matrícula, IPTU).
+- `imovel_historico`: Linha do tempo de alterações.
+- `imovel_informacoes`: Resumo de informações críticas.
+- `imoveis_campos`: Lista de campos disponíveis na API.
+- `imoveis_listas`: Dropdowns de cidades, bairros e tipos.
+- `imoveis_por_corretor`: Carteira de um colaborador específico.
+- `imoveis_por_agencia`: Imóveis vinculados a uma filial.
+- `imovel_cadastrar`: Criação de novos registros.
+- `imovel_alterar`: Atualização de dados existentes.
+- `imovel_cadastrar_fotos`: Upload de imagens para a galeria.
+- `imovel_cadastrar_documentos`: Anexo de arquivos técnicos.
+- `imovel_cadastrar_historico`: Registro de eventos manuais.
+- `imovel_cadastrar_proprietario`: Vínculo de donos ao imóvel.
+- `imovel_definir_corretor`: Atribuição de responsabilidade.
 
-### 2. Configuração
-Clone o repositório e configure as variáveis de ambiente:
-```bash
-git clone https://github.com/fabiohsan-dev/mcp-vista.git
-cd mcp-vista
-cp .env.example .env
-```
+### 👥 Módulo de Clientes & Leads (13)
+- `clientes_pesquisar`: Busca de contatos no CRM.
+- `cliente_detalhes`: Perfil completo do cliente.
+- `cliente_historico`: Log de interações com o cliente.
+- `cliente_favoritos`: Imóveis de interesse do contato.
+- `clientes_campos`: Campos disponíveis para cadastro.
+- `clientes_por_corretor`: Carteira de clientes do corretor.
+- `clientes_por_agencia`: Clientes vinculados à agência.
+- `cliente_cadastrar`: Registro de novos contatos.
+- `cliente_alterar`: Edição de perfil de cliente.
+- `cliente_cadastrar_historico`: Registro de contato (ligação, visita).
+- `cliente_definir_corretor`: Mudança de corretor responsável.
+- `lead_enviar`: Captura de leads de fontes externas (site/portais).
+- `leads_pesquisar`: Gestão de leads capturados.
 
-Edite o `.env`:
+### 📅 Módulo de Agenda (7)
+- `agendamentos_pesquisar`: Filtro geral da agenda.
+- `agendamento_detalhes`: Dados de uma visita ou reunião.
+- `agendamentos_por_corretor`: Agenda pessoal do corretor.
+- `agendamentos_por_cliente`: Compromissos de um cliente.
+- `agendamentos_por_imovel`: Visitas marcadas em um imóvel.
+- `agendamento_cadastrar`: Criação de novo evento.
+- `agendamento_alterar`: Reagendamento ou cancelamento.
+
+---
+
+## 🚀 Como Executar
+
+### 1. Configuração
+Crie um arquivo `.env` na raiz:
 ```env
-VISTA_URL=https://sua-empresa.vistahost.com.br
-VISTA_KEY=sua-chave-api
+VISTA_URL=https://suainstancia.vistahost.com.br
+VISTA_KEY=suachaveapi
 DEFAULT_LIMIT=20
 TIMEOUT_MS=30000
 ```
 
-### 3. Instalação & Build
+### 2. Build & Start
 ```bash
 npm install
 npm run build
-```
-
----
-
-## 🔌 Configuração nos Agentes
-
-### Claude Desktop
-Adicione ao seu `claude_desktop_config.json`:
-```json
-{
-  "mcpServers": {
-    "vista-crm": {
-      "command": "node",
-      "args": ["/caminho/absoluto/dist/index.js"],
-      "env": {
-        "VISTA_URL": "...",
-        "VISTA_KEY": "..."
-      }
-    }
-  }
-}
-```
-
----
-
-## 📋 Ferramentas Disponíveis
-
-| Módulo | Ferramenta | Descrição |
-|--------|------------|-----------|
-| **🏠 Imóveis** | `imoveis_pesquisar` | Busca avançada com filtros granulares. |
-| | `imovel_detalhes` | Dados completos de um imóvel específico. |
-| **👥 Clientes** | `clientes_pesquisar` | CRM: Busca de contatos e interessados. |
-| | `cliente_cadastrar` | Registro de novos clientes no sistema. |
-| **📅 Agenda** | `agendamentos_pesquisar` | Visualização de visitas e reuniões. |
-| | `agendamento_cadastrar` | Criação de novos compromissos na agenda. |
-
----
-
-## 🧪 Desenvolvimento & Testes
-
-Para garantir a qualidade, utilizamos **Vitest** para testes unitários:
-```bash
-# Rodar todos os testes
-npm test
-
-# Modo de desenvolvimento
-npm run dev
+npm start
 ```
 
 ---
 
 ## 📄 Licença
-
-Distribuído sob a licença MIT. Veja `LICENSE` para mais detalhes.
-
----
+Distribuído sob a licença MIT.
 
 ## 👨‍💻 Autor
-
 **Fabio San** - [@fabiohsan-dev](https://github.com/fabiohsan-dev)
-
-*Este é um projeto independente e não possui vínculo oficial com a Vista Software.*
