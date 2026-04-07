@@ -20,9 +20,16 @@ export class VistaClient {
     const url = this.buildUrl(endpoint);
     return this.request<T>(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  }
+
+  async delete<T>(endpoint: string, body: any): Promise<T> {
+    const url = this.buildUrl(endpoint);
+    return this.request<T>(url, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
   }
@@ -31,7 +38,15 @@ export class VistaClient {
     const url = new URL(`${this.baseUrl}${endpoint}`);
     url.searchParams.append('key', this.apiKey);
 
-    for (const [key, value] of Object.entries(params)) {
+    const finalizedParams: Record<string, any> = { ...params };
+
+    // LOFT API COMPLIANCE: Move paginacao para dentro de pesquisa se existir
+    if (finalizedParams.paginacao && finalizedParams.pesquisa) {
+      finalizedParams.pesquisa.paginacao = finalizedParams.paginacao;
+      delete finalizedParams.paginacao;
+    }
+
+    for (const [key, value] of Object.entries(finalizedParams)) {
       if (value !== undefined && value !== null) {
         const stringValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
         url.searchParams.append(key, stringValue);
@@ -47,14 +62,11 @@ export class VistaClient {
 
     try {
       const maskedUrl = url.replace(/key=[^&]+/, 'key=***');
-      logger.debug(`[API VISTA REQUEST] URL: ${maskedUrl}`);
+      logger.debug(`[API VISTA REQUEST] ${options.method} ${maskedUrl}`);
 
       const response = await fetch(url, {
         ...options,
-        headers: {
-          'Accept': 'application/json',
-          ...options.headers,
-        },
+        headers: { 'Accept': 'application/json', ...options.headers },
         signal: controller.signal,
       });
 
@@ -63,24 +75,17 @@ export class VistaClient {
       try {
         data = JSON.parse(responseText);
       } catch (e) {
-        logger.error(`[API VISTA ERROR] Resposta não é JSON: ${responseText}`);
-        throw new ApiError(`Resposta inválida da API: ${response.status}`);
+        throw new ApiError(`Resposta não-JSON: ${responseText.substring(0, 100)}`);
       }
 
       if (!response.ok || data?.status === 'error' || data?.error) {
-        logger.error(`[API VISTA ERROR] Status: ${response.status}`, { data });
         throw new ApiError(data?.message || data?.error || response.statusText, response.status);
       }
 
       return data as T;
     } catch (error: any) {
-      if (error.name === 'AbortError') {
-        throw new ApiError('Requisição cancelada por timeout', 408);
-      }
-      if (error instanceof ApiError) throw error;
-      
-      logger.error('Falha na comunicação com API Vista', error);
-      throw new ApiError(error.message || 'Erro de rede desconhecido');
+      if (error.name === 'AbortError') throw new ApiError('Timeout', 408);
+      throw error instanceof ApiError ? error : new ApiError(error.message);
     } finally {
       clearTimeout(timeout);
     }
