@@ -8,41 +8,36 @@ import { VistaClient } from './clients/VistaClient.js';
 import { ImoveisService } from './services/ImoveisService.js';
 import { ClientesService } from './services/ClientesService.js';
 import { AgendamentosService } from './services/AgendamentosService.js';
+import { PipelineService } from './services/PipelineService.js';
 
 // Tools
 import { registerImoveisTools } from './tools/imoveisTools.js';
 import { registerClientesTools } from './tools/clientesTools.js';
 import { registerAgendamentosTools } from './tools/agendamentosTools.js';
+import { registerPipelineTools } from './tools/pipelineTools.js';
 
-// 1. Inicializa Servidor MCP
 const server = new McpServer({
-  name: 'vista-crm-mcp',
-  version: '2.0.0',
+  name: 'vista-crm-mcp-loft',
+  version: '2.1.0',
 });
 
-// 2. Inicializa Clientes e Serviços
 const vistaClient = new VistaClient();
 
 const imoveisService = new ImoveisService(vistaClient);
 const clientesService = new ClientesService(vistaClient);
 const agendamentosService = new AgendamentosService(vistaClient);
+const pipelineService = new PipelineService(vistaClient);
 
-// 3. Registra as Ferramentas por Domínio
 registerImoveisTools(server, imoveisService);
 registerClientesTools(server, clientesService);
 registerAgendamentosTools(server, agendamentosService);
+registerPipelineTools(server, pipelineService);
 
-// 4. Inicia o Transporte Stdio
 async function run() {
   try {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    
-    logger.info('Servidor MCP Vista CRM iniciado.', {
-      version: '2.0.0',
-      node: process.version,
-      platform: process.platform
-    });
+    logger.info('Servidor MCP Vista CRM Loft v2.1.0 iniciado.');
   } catch (error) {
     logger.error('Falha crítica no bootstrap', error);
     process.exit(1);
