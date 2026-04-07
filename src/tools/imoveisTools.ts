@@ -1,13 +1,16 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { ImoveisService } from '../services/ImoveisService.js';
-import { logger } from '../utils/logger.js';
 
 const camposSchema = z.array(z.string()).optional().describe('Lista de campos a retornar');
 const filtrosSchema = z.record(z.any()).optional().describe('Filtros de pesquisa (Vista Syntax)');
+const paginacaoSchema = z.object({
+  pagina: z.number().int().positive().optional(),
+  quantidade: z.number().int().min(1).max(50).optional()
+}).optional();
 
 export function registerImoveisTools(server: McpServer, service: ImoveisService) {
-  server.tool('imoveis_pesquisar', 'Busca imóveis com filtros e paginação.', { campos: camposSchema, filtros: filtrosSchema, paginacao: z.object({ pagina: z.number().int().optional(), quantidade: z.number().int().optional() }).optional(), ordenacao: z.record(z.enum(['asc', 'desc'])).optional() }, async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await service.pesquisar(args), null, 2) }] }));
+  server.tool('imoveis_pesquisar', 'Busca imóveis com filtros e paginação.', { campos: camposSchema, filtros: filtrosSchema, paginacao: paginacaoSchema, ordenacao: z.record(z.enum(['asc', 'desc'])).optional() }, async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await service.pesquisar(args), null, 2) }] }));
 
   server.tool('imovel_detalhes', 'Informações completas de um imóvel.', { codigo: z.string(), campos: camposSchema }, async ({ codigo, campos }) => ({ content: [{ type: 'text', text: JSON.stringify(await service.obterDetalhes(codigo, campos), null, 2) }] }));
 
@@ -23,9 +26,9 @@ export function registerImoveisTools(server: McpServer, service: ImoveisService)
 
   server.tool('imoveis_listas', 'Listas de cidades, bairros ou tipos.', { tipo: z.enum(['cidades', 'bairros', 'tipos', 'finalidades', 'categorias']) }, async ({ tipo }) => ({ content: [{ type: 'text', text: JSON.stringify(await service.obterListas(tipo), null, 2) }] }));
 
-  server.tool('imoveis_por_corretor', 'Imóveis vinculados a um corretor.', { corretor: z.string(), campos: camposSchema, filtros: filtrosSchema }, async ({ corretor, ...args }) => ({ content: [{ type: 'text', text: JSON.stringify(await service.pesquisar({ ...args, filtros: { CodigoCorretor: corretor, ...args.filtros } }), null, 2) }] }));
+  server.tool('imoveis_por_corretor', 'Imóveis vinculados a um corretor.', { corretor: z.string(), campos: camposSchema, filtros: filtrosSchema, paginacao: paginacaoSchema }, async ({ corretor, ...args }) => ({ content: [{ type: 'text', text: JSON.stringify(await service.pesquisar({ ...args, filtros: { CodigoCorretor: corretor, ...args.filtros } }), null, 2) }] }));
 
-  server.tool('imoveis_por_agencia', 'Imóveis de uma agência específica.', { agencia: z.string(), campos: camposSchema, filtros: filtrosSchema }, async ({ agencia, ...args }) => ({ content: [{ type: 'text', text: JSON.stringify(await service.pesquisar({ ...args, filtros: { CodigoAgencia: agencia, ...args.filtros } }), null, 2) }] }));
+  server.tool('imoveis_por_agencia', 'Imóveis de uma agência específica.', { agencia: z.string(), campos: camposSchema, filtros: filtrosSchema, paginacao: paginacaoSchema }, async ({ agencia, ...args }) => ({ content: [{ type: 'text', text: JSON.stringify(await service.pesquisar({ ...args, filtros: { CodigoAgencia: agencia, ...args.filtros } }), null, 2) }] }));
 
   server.tool('imovel_cadastrar', 'Cadastra um novo imóvel.', { dados: z.record(z.any()) }, async ({ dados }) => ({ content: [{ type: 'text', text: JSON.stringify(await service.cadastrar(dados), null, 2) }] }));
 

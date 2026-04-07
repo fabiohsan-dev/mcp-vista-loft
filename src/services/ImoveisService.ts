@@ -12,39 +12,73 @@ export class ImoveisService {
     ordenacao?: Record<string, 'asc' | 'desc'>;
   }) {
     const { campos, filtros, paginacao, ordenacao } = params;
+    
+    // A API Vista exige que campos e filtros fiquem dentro do objeto "pesquisa"
     const queryParams: Record<string, any> = {
       showtotal: 1,
-      fields: campos || ['Codigo', 'Categoria', 'Bairro', 'Cidade', 'ValorVenda'],
+      pesquisa: {
+        fields: campos || ['Codigo', 'Categoria', 'Bairro', 'Cidade', 'ValorVenda'],
+        filter: filtros || {}
+      }
     };
-    if (filtros) queryParams.pesquisa = { filter: filtros };
-    if (paginacao) queryParams.paginacao = {
-      pagina: paginacao.pagina || 1,
-      quantidade: Math.min(paginacao.quantidade || env.DEFAULT_LIMIT, env.MAX_LIMIT),
-    };
-    if (ordenacao) queryParams.order = ordenacao;
+
+    if (paginacao) {
+      queryParams.paginacao = {
+        pagina: paginacao.pagina || 1,
+        quantidade: Math.min(paginacao.quantidade || env.DEFAULT_LIMIT, env.MAX_LIMIT),
+      };
+    }
+
+    if (ordenacao) {
+      queryParams.order = ordenacao;
+    }
 
     const response = await this.client.get<any>('/imoveis/listar', queryParams);
-    return optimizePayload({ items: response.data || response, metadata: { total: response.total, paginas: response.paginas, pagina: response.pagina } });
+    
+    return optimizePayload({
+      items: response.data || response,
+      metadata: {
+        total: response.total,
+        paginas: response.paginas,
+        pagina: response.pagina,
+      }
+    });
   }
 
   async obterDetalhes(codigo: string, campos?: string[]) {
-    return optimizePayload(await this.client.get<any>('/imoveis/detalhes', { fields: campos || ['*'], pesquisa: { filter: { Codigo: codigo } } }));
+    return optimizePayload(await this.client.get<any>('/imoveis/detalhes', {
+      pesquisa: {
+        fields: campos || ['*'],
+        filter: { Codigo: codigo }
+      }
+    }));
   }
 
   async obterFotos(codigo: string) {
-    return optimizePayload(await this.client.get<any>('/imoveis/fotos', { pesquisa: { filter: { Codigo: codigo } } }));
+    return optimizePayload(await this.client.get<any>('/imoveis/fotos', {
+      pesquisa: { filter: { Codigo: codigo } }
+    }));
   }
 
   async obterAnexos(codigo: string) {
-    return optimizePayload(await this.client.get<any>('/imoveis/anexos', { pesquisa: { filter: { Codigo: codigo } } }));
+    return optimizePayload(await this.client.get<any>('/imoveis/anexos', {
+      pesquisa: { filter: { Codigo: codigo } }
+    }));
   }
 
   async obterHistorico(codigo: string) {
-    return optimizePayload(await this.client.get<any>('/imoveis/historico', { pesquisa: { filter: { Codigo: codigo } } }));
+    return optimizePayload(await this.client.get<any>('/imoveis/historico', {
+      pesquisa: { filter: { Codigo: codigo } }
+    }));
   }
 
   async obterInformacoes(codigo: string) {
-    return optimizePayload(await this.client.get<any>('/imoveis/informacoes', { fields: ['*'], pesquisa: { filter: { Codigo: codigo } } }));
+    return optimizePayload(await this.client.get<any>('/imoveis/informacoes', {
+      pesquisa: {
+        fields: ['*'],
+        filter: { Codigo: codigo }
+      }
+    }));
   }
 
   async listarCampos() {
@@ -52,7 +86,9 @@ export class ImoveisService {
   }
 
   async obterListas(tipo: string) {
-    return optimizePayload(await this.client.get<any>('/imoveis/listas', { pesquisa: { filter: { tipo } } }));
+    return optimizePayload(await this.client.get<any>('/imoveis/listas', {
+      pesquisa: { filter: { tipo } }
+    }));
   }
 
   async cadastrar(dados: any) {

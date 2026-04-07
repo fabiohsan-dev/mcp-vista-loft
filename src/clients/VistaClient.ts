@@ -46,6 +46,9 @@ export class VistaClient {
     const timeout = setTimeout(() => controller.abort(), env.TIMEOUT_MS);
 
     try {
+      const maskedUrl = url.replace(/key=[^&]+/, 'key=***');
+      logger.debug(`[API VISTA REQUEST] URL: ${maskedUrl}`);
+
       const response = await fetch(url, {
         ...options,
         headers: {
@@ -55,15 +58,18 @@ export class VistaClient {
         signal: controller.signal,
       });
 
-      if (!response.ok) {
-        throw new ApiError(`Erro HTTP ${response.status}: ${response.statusText}`, response.status);
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        logger.error(`[API VISTA ERROR] Resposta não é JSON: ${responseText}`);
+        throw new ApiError(`Resposta inválida da API: ${response.status}`);
       }
 
-      const data = await response.json();
-
-      // Detecção de erro de negócio dentro da resposta 200 (comum na API Vista)
-      if (data && (data.error || data.status === 'error')) {
-        throw new ApiError(data.message || data.error || 'Erro interno na API Vista');
+      if (!response.ok || data?.status === 'error' || data?.error) {
+        logger.error(`[API VISTA ERROR] Status: ${response.status}`, { data });
+        throw new ApiError(data?.message || data?.error || response.statusText, response.status);
       }
 
       return data as T;
