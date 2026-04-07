@@ -137,34 +137,49 @@ Vá em `Settings > Cursor Settings > MCP` e adicione um novo servidor:
 | `agendamentos_pesquisar` | Filtro de agenda por corretor, cliente ou imóvel. |
 | `webhook_listar` | Monitoramento de integrações em tempo real. |
 | `imovel_deletar_video` | Remoção definitiva de ativos de mídia. |
-
 ---
 
 ## 🧪 Qualidade e Testes
 
-O servidor conta com uma bateria de testes automatizados:
-```bash
-# Rodar testes unitários (Vitest)
-npm test
+O servidor conta com uma infraestrutura de testes automatizada para garantir a estabilidade das 40+ ferramentas.
 
-# Rodar Smoke Test de integração (Python)
-python tests/integration/smoke_test_runner.py
+### 1. Testes Unitários (Vitest)
+Validam a lógica pura, como o otimizador de tokens:
+```bash
+npm test
 ```
 
-### O que o Smoke Test valida:
-1. Bootstrap seguro e validação de ambiente.
-2. Handshake do protocolo MCP (Initialize).
-3. Registro correto das 40+ ferramentas.
-4. Execução real contra a Sandbox da Vista.
-5. Bloqueio de inputs inválidos via Zod.
+### 2. Smoke Test de Integração (Python)
+Valida o protocolo MCP real via JSON-RPC e a conectividade com a API Vista.
+**Importante:** Nunca utilize credenciais hardcoded. O runner lê as variáveis do ambiente.
+
+```bash
+# Windows PowerShell
+$env:VISTA_URL="http://sandbox-rest.vistahost.com.br"; $env:VISTA_KEY="SUA_KEY"; python tests/integration/smoke_test_runner.py
+```
 
 ---
 
-## 🐞 Troubleshooting
+## 🤖 Automação (CI/CD)
+
+Este repositório utiliza **GitHub Actions** para garantir a integridade do código:
+
+- **CI (Build & Test):** Executado em cada Push ou Pull Request. Valida o build TypeScript e roda os testes.
+- **CD (Deploy):** Workflow preparado para deploy em produção (`workflow_dispatch`).
+
+### 🛡️ Configuração de Secrets
+Para que o CI execute o Smoke Test, configure os seguintes **GitHub Secrets**:
+- `VISTA_URL_SANDBOX`: URL da sandbox para testes.
+- `VISTA_KEY_SANDBOX`: Chave de API da sandbox.
+
+---
+
+## 🐞 Solução de Problemas
 
 **Logs Detalhados:**
-Os logs do servidor são enviados para `stderr`. Você pode visualizá-los no console do seu agente (ex: `Claude Desktop -> Console`). Erros da API Vista são capturados e sanitizados para não vazar informações sensíveis.
+Os logs do servidor são enviados para `stderr` em formato JSON estruturado. Você pode visualizá-los no console do seu agente. Erros da API Vista são capturados e sanitizados para **não vazar chaves de API** em mensagens de erro.
 
+---
 **Caminhos no Windows:**
 Ao configurar no Claude/Cursor, utilize barras normais (`/`) ou barras invertidas duplas (`\\`) para evitar erros de escape no JSON.
 
