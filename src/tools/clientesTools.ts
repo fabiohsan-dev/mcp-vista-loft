@@ -34,5 +34,5 @@ export function registerClientesTools(server: McpServer, service: ClientesServic
 
   server.tool('lead_enviar', 'Envia lead de fonte externa.', { dados: z.object({ Nome: z.string(), Email: z.string().email().optional(), Telefone: z.string().optional() }).passthrough() }, async ({ dados }) => ({ content: [{ type: 'text', text: JSON.stringify(await service.enviarLead(dados), null, 2) }] }));
 
-  server.tool('leads_pesquisar', 'Busca leads capturados.', { campos: camposSchema, filtros: filtrosSchema, paginacao: paginacaoSchema }, async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await service.pesquisar({ ...args, filtros: { Origem: { '!=': null }, ...args.filtros } }), null, 2) }] }));
+  server.tool('leads_pesquisar', 'Busca leads/clientes capturados. Para isolar leads, passe filtros.Origem com a origem desejada (ex: "Site").', { campos: camposSchema, filtros: filtrosSchema, paginacao: paginacaoSchema }, async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await service.pesquisar(args), null, 2) }] }));
 }

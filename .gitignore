@@ -17,6 +17,7 @@ yarn-debug.log*
 yarn-error.log*
 logs/
 *.log
+debug_logs*.json
 
 # OS Metadata
 .DS_Store
