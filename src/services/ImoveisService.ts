@@ -36,7 +36,7 @@ export class ImoveisService {
   }
 
   async listarConteudoDistinct(campos: string[]) {
-    return optimizePayload(await this.client.get<any>('/imoveis/listarConteudo', { fields: JSON.stringify(campos), v2: 1 }));
+    return optimizePayload(await this.client.get<any>('/imoveis/listarConteudo', { pesquisa: { fields: campos }, v2: 1 }));
   }
 
   async obterProntuario(codigo: string) {
@@ -69,7 +69,7 @@ export class ImoveisService {
     };
     const campo = campoMap[tipo] || tipo;
     return optimizePayload(await this.client.get<any>('/imoveis/listarConteudo', {
-      fields: JSON.stringify([campo]),
+      pesquisa: { fields: [campo] },
       v2: 1
     }));
   }
