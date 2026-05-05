@@ -40,7 +40,7 @@ export class ClientesService {
   }
 
   async listarCampos() {
-    return optimizePayload(await this.client.get<any>('/clientes/campos'));
+    return optimizePayload(await this.client.get<any>('/clientes/listarcampos'));
   }
 
   async cadastrar(dados: any) {
@@ -60,6 +60,16 @@ export class ClientesService {
   }
 
   async enviarLead(dados: any) {
-    return this.client.post('/clientes/enviar-lead', dados);
+    const fieldMap: Record<string, string> = {
+      Nome: 'nome', Email: 'email', Telefone: 'fone', Fone: 'fone',
+      Mensagem: 'mensagem', Veiculo: 'veiculo', CodigoImovel: 'veiculo', Imovel: 'veiculo',
+      Origem: 'origem', Bairro: 'bairro', Cidade: 'cidade'
+    };
+    const cadastro: Record<string, any> = {};
+    for (const [k, v] of Object.entries(dados)) {
+      const mapped = fieldMap[k] ?? (k.charAt(0).toLowerCase() + k.slice(1));
+      cadastro[mapped] = v;
+    }
+    return this.client.post('/lead', { cadastro });
   }
 }
